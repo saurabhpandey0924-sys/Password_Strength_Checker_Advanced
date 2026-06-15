@@ -1,0 +1,315 @@
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  .term{font-family:'JetBrains Mono',monospace;background:#0a0e1a;border-radius:var(--border-radius-lg);border:0.5px solid #1e2d4a;overflow:hidden;width:100%}
+  .tbar{background:#111827;padding:10px 16px;display:flex;align-items:center;gap:8px;border-bottom:0.5px solid #1e2d4a}
+  .dot{width:12px;height:12px;border-radius:50%}
+  .title-bar{font-size:11px;color:#4a5568;margin-left:8px;letter-spacing:1px}
+  .body{padding:24px}
+  .label{font-size:10px;color:#4ade80;letter-spacing:2px;margin-bottom:8px}
+  .inp-wrap{position:relative;margin-bottom:20px}
+  .pw-input{width:100%;background:#0d1117;border:1px solid #1e3a5f;color:#e2e8f0;font-family:'JetBrains Mono',monospace;font-size:16px;padding:12px 48px 12px 16px;border-radius:8px;outline:none;transition:border-color 0.2s}
+  .pw-input:focus{border-color:#3b82f6}
+  .eye-btn{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#4a5568;cursor:pointer;font-size:16px;padding:4px}
+  .strength-bar-wrap{margin-bottom:20px}
+  .bar-label{display:flex;justify-content:space-between;margin-bottom:6px}
+  .bar-text{font-size:10px;color:#4a5568;letter-spacing:1px}
+  .bar-val{font-size:11px;font-weight:700;letter-spacing:2px}
+  .bar-bg{background:#1a1f2e;border-radius:4px;height:6px;overflow:hidden}
+  .bar-fill{height:100%;border-radius:4px;transition:width 0.5s cubic-bezier(.4,0,.2,1),background 0.3s}
+  .entropy-display{background:#0d1117;border:1px solid #1e3a5f;border-radius:8px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between}
+  .ent-left{font-size:10px;color:#4a5568;letter-spacing:1px}
+  .ent-val{font-size:22px;font-weight:700;color:#60a5fa;font-family:'JetBrains Mono',monospace}
+  .ent-unit{font-size:10px;color:#4a5568;margin-left:4px}
+  .checks-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px}
+  .check-item{background:#0d1117;border:1px solid #1e3a5f;border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:10px;transition:border-color 0.3s}
+  .check-item.pass{border-color:#16a34a}
+  .check-icon{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;border:1px solid #1e3a5f;transition:all 0.3s}
+  .check-item.pass .check-icon{background:#16a34a;border-color:#16a34a;color:#fff}
+  .check-item:not(.pass) .check-icon{background:transparent;color:#4a5568}
+  .check-text{font-size:10px;color:#6b7280;letter-spacing:0.5px;line-height:1.4}
+  .check-item.pass .check-text{color:#a3e635}
+  .crack-section{background:#0d1117;border:1px solid #1e3a5f;border-radius:8px;padding:14px 16px;margin-bottom:20px}
+  .crack-title{font-size:10px;color:#f59e0b;letter-spacing:2px;margin-bottom:10px}
+  .crack-time{font-size:13px;color:#e2e8f0;display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:0.5px solid #1e2d4a}
+  .crack-time:last-child{border-bottom:none}
+  .crack-method{color:#4a5568;font-size:10px}
+  .crack-val{font-size:11px}
+  .crack-val.fast{color:#f87171}
+  .crack-val.mid{color:#fb923c}
+  .crack-val.safe{color:#4ade80}
+  .output-log{background:#0d1117;border:1px solid #1e3a5f;border-radius:8px;padding:12px 16px;font-size:11px;color:#4ade80;line-height:1.8;min-height:56px;font-family:'JetBrains Mono',monospace}
+  .log-line{display:flex;gap:8px}
+  .log-prefix{color:#3b82f6;flex-shrink:0}
+  .log-msg{color:#a3e635}
+  .log-err{color:#f87171}
+  .score-ring-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .top-section{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start;margin-bottom:20px}
+  .ring-container{position:relative;width:80px;height:80px}
+  .ring-container svg{position:absolute;top:0;left:0}
+  .ring-score{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:20px;font-weight:700;color:#e2e8f0;font-family:'JetBrains Mono',monospace;text-align:center;line-height:1}
+  .ring-label{font-size:8px;color:#4a5568;letter-spacing:1px;text-align:center;margin-top:2px}
+
+/* ===== RESPONSIVE V3 ===== */
+html,body{width:100%;overflow-x:hidden}
+.term{max-width:1200px;margin:auto}
+.output-log{overflow-wrap:anywhere;word-break:break-word}
+
+@media (max-width:992px){
+  .body{padding:18px}
+  .top-section{grid-template-columns:1fr!important}
+  .score-ring-wrap{margin:auto}
+}
+
+@media (max-width:768px){
+  .body{padding:16px}
+  .checks-grid{grid-template-columns:1fr!important}
+  .entropy-display{flex-direction:column;align-items:flex-start;gap:8px}
+  .crack-time{flex-direction:column;align-items:flex-start;gap:4px}
+  .ring-container,.ring-container svg{width:72px;height:72px}
+  .ring-score{font-size:18px}
+  .pw-input{font-size:14px}
+}
+
+@media (max-width:480px){
+  .body{padding:12px}
+  .pw-input{padding:10px 40px 10px 12px;font-size:13px}
+  .title-bar{font-size:8px}
+  .ring-container,.ring-container svg{width:64px;height:64px}
+  .output-log{font-size:9px}
+}
+
+</style>
+
+<h2 class="sr-only">Interactive password strength checker with entropy analysis and crack time estimation</h2>
+
+<div class="term">
+  <div class="tbar">
+    <div class="dot" style="background:#ff5f57"></div>
+    <div class="dot" style="background:#ffbd2e"></div>
+    <div class="dot" style="background:#28c840"></div>
+    <span class="title-bar">DECODELABS // PASSWORD STRENGTH ANALYZER v2.6</span>
+  </div>
+  <div class="body">
+
+    <div class="label">INPUT STREAM</div>
+    <div class="inp-wrap">
+      <input class="pw-input" type="password" id="pw" placeholder="enter password to analyze..." autocomplete="off" />
+      <button class="eye-btn" id="eyeBtn" onclick="toggleEye()" aria-label="Toggle visibility">
+        <i class="ti ti-eye" id="eyeIcon"></i>
+      </button>
+    </div>
+
+    <div class="top-section">
+      <div>
+        <div class="label">STRENGTH SIGNAL</div>
+        <div class="bar-wrap strength-bar-wrap" style="margin-top:8px">
+          <div class="bar-label">
+            <span class="bar-text" id="strLabel">WAITING FOR INPUT</span>
+            <span class="bar-val" id="strVal" style="color:#4a5568">—</span>
+          </div>
+          <div class="bar-bg"><div class="bar-fill" id="barFill" style="width:0%;background:#1e3a5f"></div></div>
+        </div>
+
+        <div class="entropy-display" style="margin-top:12px">
+          <div class="ent-left">ENTROPY<br><span style="font-size:8px;color:#334155">SHANNON BITS</span></div>
+          <div style="display:flex;align-items:baseline">
+            <span class="ent-val" id="entVal">0</span>
+            <span class="ent-unit">bits</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="score-ring-wrap">
+        <div class="ring-container">
+          <svg width="80" height="80" viewBox="0 0 80 80">
+            <circle cx="40" cy="40" r="32" fill="none" stroke="#1e2d4a" stroke-width="6"/>
+            <circle id="ringCircle" cx="40" cy="40" r="32" fill="none" stroke="#3b82f6" stroke-width="6"
+              stroke-dasharray="201" stroke-dashoffset="201"
+              stroke-linecap="round" transform="rotate(-90 40 40)"
+              style="transition:stroke-dashoffset 0.6s cubic-bezier(.4,0,.2,1),stroke 0.3s"/>
+          </svg>
+          <div class="ring-score">
+            <div id="ringScore">0</div>
+            <div class="ring-label">/ 100</div>
+          </div>
+        </div>
+        <div style="font-size:9px;color:#4a5568;letter-spacing:1px;margin-top:6px;text-align:center">RISK<br>SCORE</div>
+      </div>
+    </div>
+
+    <div class="label">VALIDATION MATRIX</div>
+    <div class="checks-grid">
+      <div class="check-item" id="c-len">
+        <div class="check-icon" id="i-len"><i class="ti ti-ruler-2"></i></div>
+        <div class="check-text">LENGTH ≥ 8<br>CHARS</div>
+      </div>
+      <div class="check-item" id="c-up">
+        <div class="check-icon" id="i-up"><i class="ti ti-letter-case-upper"></i></div>
+        <div class="check-text">UPPERCASE<br>LETTER</div>
+      </div>
+      <div class="check-item" id="c-dig">
+        <div class="check-icon" id="i-dig"><i class="ti ti-number"></i></div>
+        <div class="check-text">NUMERIC<br>DIGIT</div>
+      </div>
+      <div class="check-item" id="c-sym">
+        <div class="check-icon" id="i-sym"><i class="ti ti-asterisk"></i></div>
+        <div class="check-text">SPECIAL<br>SYMBOL</div>
+      </div>
+      <div class="check-item" id="c-long">
+        <div class="check-icon" id="i-long"><i class="ti ti-shield-check"></i></div>
+        <div class="check-text">LENGTH ≥ 12<br>BONUS</div>
+      </div>
+      <div class="check-item" id="c-leak">
+        <div class="check-icon" id="i-leak"><i class="ti ti-database-off"></i></div>
+        <div class="check-text">NOT<br>LEAKED PW</div>
+      </div>
+    </div>
+
+    <div class="label">CRACK TIME ESTIMATE</div>
+    <div class="crack-section">
+      <div class="crack-time">
+        <span class="crack-method">Online attack (throttled)</span>
+        <span class="crack-val" id="ct-online">—</span>
+      </div>
+      <div class="crack-time">
+        <span class="crack-method">Offline fast hash (MD5)</span>
+        <span class="crack-val" id="ct-offline">—</span>
+      </div>
+      <div class="crack-time">
+        <span class="crack-method">GPU cluster (bcrypt)</span>
+        <span class="crack-val" id="ct-gpu">—</span>
+      </div>
+    </div>
+
+    <div class="label">SYSTEM LOG</div>
+    <div class="output-log" id="logBox">
+      <div class="log-line"><span class="log-prefix">$</span><span class="log-msg">SYSTEM READY. AWAITING INPUT...</span></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const LEAKED = ["password","123456","password123","admin","letmein","qwerty","abc123","monkey","1234567890","iloveyou","password1","welcome","login","pass","master","dragon","sunshine","princess","shadow","superman"];
+
+function toggleEye(){
+  const inp=document.getElementById('pw');
+  const icon=document.getElementById('eyeIcon');
+  if(inp.type==='password'){inp.type='text';icon.className='ti ti-eye-off';}
+  else{inp.type='password';icon.className='ti ti-eye';}
+}
+
+function entropy(pw){
+  if(!pw.length)return 0;
+  let pool=0;
+  if(/[a-z]/.test(pw))pool+=26;
+  if(/[A-Z]/.test(pw))pool+=26;
+  if(/[0-9]/.test(pw))pool+=10;
+  if(/[^a-zA-Z0-9]/.test(pw))pool+=32;
+  return Math.round(pw.length*Math.log2(pool||1));
+}
+
+function crackTime(bits,ratePerSec){
+  const combos=Math.pow(2,bits);
+  const secs=combos/ratePerSec/2;
+  if(secs<60)return{val:'< 1 min',cls:'fast'};
+  if(secs<3600)return{val:Math.round(secs/60)+' minutes',cls:'fast'};
+  if(secs<86400)return{val:Math.round(secs/3600)+' hours',cls:'mid'};
+  if(secs<31536000)return{val:Math.round(secs/86400)+' days',cls:'mid'};
+  if(secs<315360000)return{val:Math.round(secs/31536000)+' years',cls:'safe'};
+  if(secs<3.15e11)return{val:Math.round(secs/31536000).toLocaleString()+' years',cls:'safe'};
+  return{val:'centuries',cls:'safe'};
+}
+
+function setCheck(id,pass){
+  const el=document.getElementById('c-'+id);
+  const ic=document.getElementById('i-'+id);
+  if(pass){el.classList.add('pass');}
+  else{el.classList.remove('pass');}
+}
+
+function log(msgs){
+  const box=document.getElementById('logBox');
+  box.innerHTML=msgs.map(m=>`<div class="log-line"><span class="log-prefix">$</span><span class="${m.err?'log-err':'log-msg'}">${m.text}</span></div>`).join('');
+}
+
+function analyze(){
+  const pw=document.getElementById('pw').value;
+  const len=pw.length;
+  const hasUpper=/[A-Z]/.test(pw);
+  const hasDigit=/[0-9]/.test(pw);
+  const hasSym=/[^a-zA-Z0-9]/.test(pw);
+  const isLong=len>=12;
+  const isLeaked=LEAKED.includes(pw.toLowerCase());
+
+  setCheck('len',len>=8);
+  setCheck('up',hasUpper);
+  setCheck('dig',hasDigit);
+  setCheck('sym',hasSym);
+  setCheck('long',isLong);
+  setCheck('leak',!isLeaked&&len>0);
+
+  let score=0;
+  if(len>=8)score+=20;
+  if(hasUpper)score+=20;
+  if(hasDigit)score+=20;
+  if(hasSym)score+=25;
+  if(isLong)score+=10;
+  if(!isLeaked&&len>0)score+=5;
+  if(isLeaked)score=Math.min(score,10);
+  if(len===0)score=0;
+
+  const bits=entropy(pw);
+  document.getElementById('entVal').textContent=bits;
+
+  const fill=document.getElementById('barFill');
+  const ring=document.getElementById('ringCircle');
+  const ringScore=document.getElementById('ringScore');
+
+  fill.style.width=score+'%';
+  ringScore.textContent=score;
+
+  const circumference=201;
+  ring.style.strokeDashoffset=circumference-(circumference*score/100);
+
+  let color,label;
+  if(score<=25){color='#f87171';label='CRITICAL — WEAK';}
+  else if(score<=50){color='#fb923c';label='LOW — MEDIUM';}
+  else if(score<=75){color='#facc15';label='MODERATE — FAIR';}
+  else{color='#4ade80';label='STRONG — SECURE';}
+
+  if(len===0){color='#1e3a5f';label='WAITING FOR INPUT';}
+
+  fill.style.background=color;
+  ring.style.stroke=len>0?color:'#1e3a5f';
+  document.getElementById('strVal').textContent=len>0?label:'—';
+  document.getElementById('strVal').style.color=color;
+  document.getElementById('strLabel').textContent=len>0?'CLASSIFICATION':'WAITING FOR INPUT';
+
+  const o=crackTime(bits,1000);
+  const of2=crackTime(bits,1e10);
+  const g=crackTime(bits,1e6);
+  const ctOnline=document.getElementById('ct-online');
+  const ctOffline=document.getElementById('ct-offline');
+  const ctGpu=document.getElementById('ct-gpu');
+
+  function setct(el,r){el.textContent=len>0?r.val:'—';el.className='crack-val '+(len>0?r.cls:'');}
+  setct(ctOnline,o);setct(ctOffline,of2);setct(ctGpu,g);
+
+  const msgs=[];
+  if(len===0){msgs.push({text:'SYSTEM READY. AWAITING INPUT...'});log(msgs);return;}
+  msgs.push({text:`INPUT: ${len} chars | entropy: ${bits} bits`});
+  if(isLeaked){msgs.push({text:'WARNING: PASSWORD FOUND IN LEAKED DATABASE',err:true});}
+  if(len<8){msgs.push({text:'FAIL: MINIMUM LENGTH NOT MET (need 8+)',err:true});}
+  if(!hasUpper){msgs.push({text:'FAIL: NO UPPERCASE LETTER DETECTED',err:true});}
+  if(!hasDigit){msgs.push({text:'FAIL: NO NUMERIC DIGIT DETECTED',err:true});}
+  if(!hasSym){msgs.push({text:'WARN: NO SPECIAL SYMBOL — ADD ONE',err:false});}
+  if(score>75){msgs.push({text:'STATUS: GATEKEEPER PASS — INPUT VALIDATED'});}
+  log(msgs);
+}
+
+document.getElementById('pw').addEventListener('input',analyze);
+</script>
