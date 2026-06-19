@@ -85,9 +85,14 @@ Saurabh Pandey
 GitHub:
 https://github.com/saurabhpandey0924-sys
 
-LinkedIn:
-(Add your LinkedIn URL)
+LinkedIn: www.linkedin.com/in/saurabh-p-pandey-754923414
+
 
 ---
 
 ⭐ If you like this project, give it a star on GitHub.
+
+## 🌐 Live Demo
+
+You can try out the live application here:
+[Password Strength Checker Advanced](https://saurabhpandey0924-sys.github.io/Password_Strength_Checker_Advanced/)
